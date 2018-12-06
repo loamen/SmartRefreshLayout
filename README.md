@@ -107,21 +107,31 @@ SmartRefreshLayout的目标是打造一个强大，稳定，成熟的下拉刷�
  - SmartRefreshFooter 各种Footer的集成，除了Layout自带的Footer，其它都在这个包中.
 
 ## 简单用例
-#### 1.在 build.gradle 中添加依赖
-```
-//1.1.0 API改动过大，老用户升级需谨慎
-compile 'com.scwang.smartrefresh:SmartRefreshLayout:1.1.0-alpha-16'
-compile 'com.scwang.smartrefresh:SmartRefreshHeader:1.1.0-alpha-16'//没有使用特殊Header，可以不加这行
-compile 'com.android.support:appcompat-v7:25.3.1'//版本 23以上（必须）
 
-//1.0.5 当1.1.0出现问题可以回退到1.0.5.1
-compile 'com.scwang.smartrefresh:SmartRefreshLayout:1.0.5.1'
-compile 'com.scwang.smartrefresh:SmartRefreshHeader:1.0.5.1'//没有使用特殊Header，可以不加这行
-compile 'com.android.support:appcompat-v7:25.3.1'//版本 23以上（必须）
-compile 'com.android.support:design:25.3.1'//版本随意（非必须，引用可以解决无法预览问题）
+#### 1.先在项目根目录的 build.gradle 的 repositories 添加:
+```
+allprojects {
+     repositories {
+        ...
+        maven { url "https://jitpack.io" }
+    }
+}
 ```
 
-#### 2.在XML布局文件中添加 SmartRefreshLayout
+#### 2.在 build.gradle 中添加依赖
+```
+implementation deps.support.app_compat
+implementation deps.support.recyclerview
+implementation deps.support.design
+
+implementation 'com.github.xuexiangjys.SmartRefreshLayout:refresh-layout:1.1.3'
+
+//如果对header没有特色要求的话，可以不引用
+implementation 'com.github.xuexiangjys.SmartRefreshLayout:refresh-header:1.1.3'
+
+```
+
+#### 3.在XML布局文件中添加 SmartRefreshLayout
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <com.scwang.smartrefresh.layout.SmartRefreshLayout xmlns:android="http://schemas.android.com/apk/res/android"
@@ -137,7 +147,7 @@ compile 'com.android.support:design:25.3.1'//版本随意（非必须，引用�
 </com.scwang.smartrefresh.layout.SmartRefreshLayout>
 ```
 
-#### 3.在 Activity 或者 Fragment 中添加代码
+#### 4.在 Activity 或者 Fragment 中添加代码
 ```java
 RefreshLayout refreshLayout = (RefreshLayout)findViewById(R.id.refreshLayout);
 refreshLayout.setOnRefreshListener(new OnRefreshListener() {
