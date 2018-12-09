@@ -35,8 +35,8 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<SmartV
     private int mLastPosition = -1;
     private boolean mOpenAnimationEnable = true;
 
-    private SmartViewHolder.OnItemClickListener mOnItemClickListener;
-    private SmartViewHolder.OnItemLongClickListener mOnItemLongClickListener;
+    protected SmartViewHolder.OnItemClickListener mOnItemClickListener;
+    protected SmartViewHolder.OnItemLongClickListener mOnItemLongClickListener;
 
     public BaseRecyclerAdapter(@LayoutRes int layoutId) {
         setHasStableIds(false);
@@ -67,16 +67,41 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<SmartV
 
     @Override
     public SmartViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        return new SmartViewHolder(LayoutInflater.from(parent.getContext()).inflate(mLayoutId, parent, false), mOnItemClickListener, mOnItemLongClickListener);
+        return new SmartViewHolder(generateItemView(parent, viewType), mOnItemClickListener, mOnItemLongClickListener);
+    }
+
+    /**
+     * 创建条目控件
+     *
+     * @param parent
+     * @param viewType
+     * @return
+     */
+    protected View generateItemView(ViewGroup parent, int viewType) {
+        return getInflate(parent, mLayoutId);
+    }
+
+    /**
+     * 加载布局获取控件
+     *
+     * @param parent
+     * @param layoutId
+     * @return
+     */
+    protected View getInflate(ViewGroup parent, @LayoutRes int layoutId) {
+        return LayoutInflater.from(parent.getContext()).inflate(layoutId, parent, false);
     }
 
     @Override
     public void onBindViewHolder(SmartViewHolder holder, int position) {
-        onBindViewHolder(holder, getItem(position), position);
+        if (getItem(position) != null) {
+            onBindViewHolder(holder, getItem(position), position);
+        }
     }
 
     /**
      * 绑定布局控件
+     *
      * @param holder
      * @param model
      * @param position
@@ -242,6 +267,10 @@ public abstract class BaseRecyclerAdapter<T> extends RecyclerView.Adapter<SmartV
      */
     public List<T> getListData() {
         return mList;
+    }
+
+    public int getLastPosition() {
+        return mLastPosition;
     }
 
     /**
