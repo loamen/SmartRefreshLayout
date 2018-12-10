@@ -25,7 +25,7 @@ import android.widget.TextView;
  */
 public class SmartViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
-    private SparseArray<View> mViews;
+    private final SparseArray<View> mViews;
 
     private final OnItemClickListener mOnItemClickListener;
     private final OnItemLongClickListener mOnItemLongClickListener;
@@ -95,7 +95,14 @@ public class SmartViewHolder extends RecyclerView.ViewHolder implements View.OnC
         return true;
     }
 
-    private <T extends View> T findViewById(int viewId) {
+    /**
+     * 寻找控件
+     *
+     * @param viewId
+     * @param <T>
+     * @return
+     */
+    public <T extends View> T findViewById(int viewId) {
         View view = mViews.get(viewId);
         if (view == null) {
             view = itemView.findViewById(viewId);
@@ -110,7 +117,7 @@ public class SmartViewHolder extends RecyclerView.ViewHolder implements View.OnC
      * @param id
      * @return
      */
-    private View findView(@IdRes int id) {
+    public View findView(@IdRes int id) {
         return id == 0 ? itemView : findViewById(id);
     }
 
@@ -296,6 +303,15 @@ public class SmartViewHolder extends RecyclerView.ViewHolder implements View.OnC
         View view = findViewById(viewId);
         view.setBackgroundResource(resId);
         return this;
+    }
+
+    /**
+     * 清除控件缓存
+     */
+    public void clearViews() {
+        if (mViews != null) {
+            mViews.clear();
+        }
     }
 
     /**
