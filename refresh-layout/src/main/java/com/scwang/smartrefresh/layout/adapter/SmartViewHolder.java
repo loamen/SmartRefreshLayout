@@ -3,10 +3,12 @@ package com.scwang.smartrefresh.layout.adapter;
 import android.content.res.Resources;
 import android.support.annotation.ColorRes;
 import android.support.annotation.IdRes;
+import android.support.annotation.NonNull;
 import android.support.annotation.StringRes;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextWatcher;
+import android.util.SparseArray;
 import android.util.TypedValue;
 import android.view.View;
 import android.widget.CheckBox;
@@ -23,19 +25,33 @@ import android.widget.TextView;
  */
 public class SmartViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnLongClickListener {
 
+    private SparseArray<View> mViews;
+
     private final OnItemClickListener mOnItemClickListener;
     private final OnItemLongClickListener mOnItemLongClickListener;
     private int mPosition = -1;
 
-    public SmartViewHolder(View itemView, OnItemClickListener onItemClickListener, OnItemLongClickListener onItemLongClickListener) {
+    public SmartViewHolder(@NonNull View itemView) {
+        this(itemView, null, null);
+    }
+
+    public SmartViewHolder(@NonNull View itemView, OnItemClickListener onItemClickListener, OnItemLongClickListener onItemLongClickListener) {
         super(itemView);
-        mOnItemClickListener = onItemClickListener;
-        mOnItemLongClickListener = onItemLongClickListener;
+        mViews = new SparseArray<>();
+        initBackground(itemView);
+
         itemView.setOnClickListener(this);
         itemView.setOnLongClickListener(this);
-        /*
-         * 设置水波纹背景
-         */
+        mOnItemClickListener = onItemClickListener;
+        mOnItemLongClickListener = onItemLongClickListener;
+    }
+
+    /**
+     * 设置水波纹背景
+     *
+     * @param itemView
+     */
+    protected void initBackground(View itemView) {
         if (itemView.getBackground() == null) {
             TypedValue typedValue = new TypedValue();
             Resources.Theme theme = itemView.getContext().getTheme();
@@ -79,15 +95,13 @@ public class SmartViewHolder extends RecyclerView.ViewHolder implements View.OnC
         return true;
     }
 
-    /**
-     * 寻找控件
-     *
-     * @param id
-     * @param <T>
-     * @return
-     */
-    public final <T extends View> T findViewById(@IdRes int id) {
-        return itemView.findViewById(id);
+    private <T extends View> T findViewById(int viewId) {
+        View view = mViews.get(viewId);
+        if (view == null) {
+            view = itemView.findViewById(viewId);
+            mViews.put(viewId, view);
+        }
+        return (T) view;
     }
 
     /**
@@ -97,7 +111,7 @@ public class SmartViewHolder extends RecyclerView.ViewHolder implements View.OnC
      * @return
      */
     private View findView(@IdRes int id) {
-        return id == 0 ? itemView : itemView.findViewById(id);
+        return id == 0 ? itemView : findViewById(id);
     }
 
     /**
@@ -268,6 +282,19 @@ public class SmartViewHolder extends RecyclerView.ViewHolder implements View.OnC
         if (view instanceof TextView) {
             ((TextView) view).addTextChangedListener(watcher);
         }
+        return this;
+    }
+
+    /**
+     * 设置背景
+     *
+     * @param viewId
+     * @param resId
+     * @return
+     */
+    public SmartViewHolder backgroundResId(int viewId, int resId) {
+        View view = findViewById(viewId);
+        view.setBackgroundResource(resId);
         return this;
     }
 

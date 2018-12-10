@@ -3,7 +3,6 @@ package com.scwang.smartrefresh.layout.adapter;
 import android.database.DataSetObservable;
 import android.database.DataSetObserver;
 import android.support.annotation.LayoutRes;
-import android.support.annotation.NonNull;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,13 +14,17 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * 基础 RecyclerAdapter
+ * Smart RecyclerAdapter
  *
  * @author xuexiang
  * @since 2018/12/6 下午3:04
  */
-public abstract class BaseRecyclerAdapter<T, V extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<V> implements ListAdapter {
+public abstract class SmartRecyclerAdapter<T> extends RecyclerView.Adapter<SmartViewHolder> implements ListAdapter {
 
+    /**
+     * 布局id
+     */
+    private final int mLayoutId;
     /**
      * 数据
      */
@@ -32,22 +35,50 @@ public abstract class BaseRecyclerAdapter<T, V extends RecyclerView.ViewHolder> 
     private int mLastPosition = -1;
     private boolean mOpenAnimationEnable = true;
 
-    public BaseRecyclerAdapter() {
+    protected SmartViewHolder.OnItemClickListener mOnItemClickListener;
+    protected SmartViewHolder.OnItemLongClickListener mOnItemLongClickListener;
+
+    public SmartRecyclerAdapter(@LayoutRes int layoutId) {
         setHasStableIds(false);
         mList = new ArrayList<>();
+        mLayoutId = layoutId;
     }
 
-    public BaseRecyclerAdapter(Collection<T> collection) {
+    public SmartRecyclerAdapter(Collection<T> collection, @LayoutRes int layoutId) {
         setHasStableIds(false);
         mList = new ArrayList<>(collection);
+        mLayoutId = layoutId;
     }
 
-    private void addAnimate(V holder, int position) {
+    public SmartRecyclerAdapter(Collection<T> collection, @LayoutRes int layoutId, SmartViewHolder.OnItemClickListener listener) {
+        setHasStableIds(false);
+        setOnItemClickListener(listener);
+        mList = new ArrayList<>(collection);
+        mLayoutId = layoutId;
+    }
+
+    private void addAnimate(SmartViewHolder holder, int position) {
         if (mOpenAnimationEnable && mLastPosition < position) {
             holder.itemView.setAlpha(0);
             holder.itemView.animate().alpha(1).start();
             mLastPosition = position;
         }
+    }
+
+    @Override
+    public SmartViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+        return new SmartViewHolder(generateItemView(parent, viewType), mOnItemClickListener, mOnItemLongClickListener);
+    }
+
+    /**
+     * 创建条目控件
+     *
+     * @param parent
+     * @param viewType
+     * @return
+     */
+    protected View generateItemView(ViewGroup parent, int viewType) {
+        return getInflate(parent, mLayoutId);
     }
 
     /**
@@ -62,7 +93,7 @@ public abstract class BaseRecyclerAdapter<T, V extends RecyclerView.ViewHolder> 
     }
 
     @Override
-    public void onBindViewHolder(@NonNull V holder, int position) {
+    public void onBindViewHolder(SmartViewHolder holder, int position) {
         if (getItem(position) != null) {
             onBindViewHolder(holder, getItem(position), position);
         }
@@ -75,7 +106,7 @@ public abstract class BaseRecyclerAdapter<T, V extends RecyclerView.ViewHolder> 
      * @param model
      * @param position
      */
-    protected abstract void onBindViewHolder(V holder, T model, int position);
+    protected abstract void onBindViewHolder(SmartViewHolder holder, T model, int position);
 
     @Override
     public int getItemCount() {
@@ -83,7 +114,7 @@ public abstract class BaseRecyclerAdapter<T, V extends RecyclerView.ViewHolder> 
     }
 
     @Override
-    public void onViewAttachedToWindow(@NonNull V holder) {
+    public void onViewAttachedToWindow(SmartViewHolder holder) {
         super.onViewAttachedToWindow(holder);
         addAnimate(holder, holder.getLayoutPosition());
     }
@@ -92,7 +123,17 @@ public abstract class BaseRecyclerAdapter<T, V extends RecyclerView.ViewHolder> 
         mOpenAnimationEnable = enabled;
     }
 
-    public BaseRecyclerAdapter refresh(Collection<T> collection) {
+    public SmartRecyclerAdapter<T> setOnItemClickListener(SmartViewHolder.OnItemClickListener listener) {
+        mOnItemClickListener = listener;
+        return this;
+    }
+
+    public SmartRecyclerAdapter<T> setOnItemLongClickListener(SmartViewHolder.OnItemLongClickListener listener) {
+        mOnItemLongClickListener = listener;
+        return this;
+    }
+
+    public SmartRecyclerAdapter<T> refresh(Collection<T> collection) {
         if (collection != null) {
             mList.clear();
             mList.addAll(collection);
@@ -102,7 +143,7 @@ public abstract class BaseRecyclerAdapter<T, V extends RecyclerView.ViewHolder> 
         return this;
     }
 
-    public BaseRecyclerAdapter loadMore(Collection<T> collection) {
+    public SmartRecyclerAdapter<T> loadMore(Collection<T> collection) {
         if (collection != null) {
             mList.addAll(collection);
             notifyChanged();
@@ -110,7 +151,7 @@ public abstract class BaseRecyclerAdapter<T, V extends RecyclerView.ViewHolder> 
         return this;
     }
 
-    public BaseRecyclerAdapter load(T item) {
+    public SmartRecyclerAdapter<T> load(T item) {
         if (item != null) {
             mList.add(item);
             notifyChanged();
@@ -167,14 +208,15 @@ public abstract class BaseRecyclerAdapter<T, V extends RecyclerView.ViewHolder> 
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-        V holder;
+        SmartViewHolder holder;
         if (convertView != null) {
-            holder = (V) convertView.getTag();
+            holder = (SmartViewHolder) convertView.getTag();
         } else {
             holder = onCreateViewHolder(parent, getItemViewType(position));
             convertView = holder.itemView;
             convertView.setTag(holder);
         }
+        holder.setPosition(position);
         onBindViewHolder(holder, position);
         addAnimate(holder, position);
         return convertView;
