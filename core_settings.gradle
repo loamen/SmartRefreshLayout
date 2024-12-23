@@ -1,0 +1,8 @@
+def rootDir = file(".")
+
+def modulePrefix = ':'
+
+include modulePrefix + 'refresh-header'
+project(modulePrefix + 'refresh-header').projectDir = new File(rootDir, 'refresh-header')
+include modulePrefix + 'refresh-layout'
+project(modulePrefix + 'refresh-layout').projectDir = new File(rootDir, 'refresh-layout')
