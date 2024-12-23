@@ -19,4 +19,4 @@ dependencies {
     compileOnly deps.support.design
 }
 
-//apply from: "https://raw.kkgithub.com/loamen/XUtil/master/JitPackUpload.gradle"
+//apply from: "../../XUtil/JitPackUpload.gradle"
